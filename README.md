@@ -1,2 +1,3 @@
 # HTML5
-My current and old projects created with HTML5 and Javascript
+
+These are just some random and simple HTML5 projects I have been working on recently. Feel free to use this code in what ever way you'd like.
