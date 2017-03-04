@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style type="text/css">
+            html {
+                margin: 0;
+                background-color: #444;
+                color: #FFF;
+            }
+			canvas {
+				position: absolute;
+				left: 100px;
+				top: 100px;
+				z-index: -1;
+				background-color: #111;
+			}
+			input {
+				position: absolute;
+				height: 100%;
+				width: 100%;
+			}
+        </style>
+    </head>
+    <body>
+		<div id="info">Zachary Winters | Audio Visualizer</div>
+		<input type="file" id="uploadedFile" accept=".mp3,.m4a"></input>
+		<canvas id='canvas'></canvas>
+        <script type="text/javascript">
+			var ctx = document.getElementById('canvas').getContext("2d"),
+			dim = [192,192]
+			canvas.width  = dim[0];
+			canvas.height = dim[1];
+            Visualizer = function() {
+                this.file = null, //the current file
+                this.fileName = null, //the current file name
+                this.audioContext = null,
+                this.source = null, //the audio source
+                this.info = document.getElementById('info').innerHTML, //this used to upgrade the UI information
+                this.infoUpdateId = null, //to store the setTimeout ID and clear the interval
+                this.animationId = null;
+            };
+            Visualizer.prototype = {
+                ini: function() {
+                    this.audioContext = new AudioContext(); //fix browser vender for AudioContext
+                    this._addEventListner();
+                },
+                _addEventListner: function() {
+                    var that = this,
+                    audioInput = document.getElementById('uploadedFile');
+                    //listen the file upload
+                    audioInput.onchange = function() {
+						that.file = audioInput.files[0];
+						that.fileName = that.file.name;
+						//once the file is ready,start the visualizer
+						that._start();
+                    };
+                },
+                _start: function() {
+                    //read and decode the file into audio array buffer
+                    var that = this,
+                        file = this.file,
+                        fr = new FileReader();
+                    fr.onload = function(e) {
+                        var fileResult = e.target.result;
+                        var audioContext = that.audioContext;
+                        audioContext.decodeAudioData(fileResult, function(buffer) {
+                            that._visualize(audioContext, buffer);
+                        });
+                    };
+                    //assign the file to the reader
+                    document.getElementById('info').innerHTML = 'Reading File...'; //Update Text
+                    fr.readAsArrayBuffer(file);
+                },
+                _visualize: function(audioContext, buffer) {
+                    var audioBufferSouceNode = audioContext.createBufferSource(),
+					analyser = audioContext.createAnalyser(),
+					that = this;
+                    //connect the source to the analyser
+                    audioBufferSouceNode.connect(analyser);
+                    //connect the analyser to the destination(the speaker), or we won't hear the sound
+                    analyser.connect(audioContext.destination);
+                    //then assign the buffer to the buffer source node
+                    audioBufferSouceNode.buffer = buffer;
+					//Play audio
+                    audioBufferSouceNode.start(0);
+                    this.source = audioBufferSouceNode;
+                    document.getElementById('info').innerHTML = 'Playing ' + this.fileName; //Update Info
+                    this.info = 'Playing ' + this.fileName;
+                    this._drawSpectrum(analyser);
+                },
+                _drawSpectrum: function(analyser) {
+                    var that = this;
+					var tot = 0
+                    var C = ["#f00","#f30","#f60","#f90","#fc0","#ff0","#cf0","#9f0","#6f0","#3f0","#0f0","#0f3","#0f6","#0f9","#0fc","#0ff","#0cf","#09f","#06f","#03f","#00f","#30f","#60f","#90f","#c0f","#f0f","#f0c","#f09","#f06","#f03"]
+					var drawMeter = function() {
+						var array = new Uint8Array(analyser.frequencyBinCount);
+						analyser.getByteFrequencyData(array);
+						ctx.clearRect(0,0,dim[0],dim[1]);
+						for (var x = 0; x < 30; x++){
+							ctx.fillStyle=C[x];
+							for(var y = 0; y < Math.round(array[x*20])/8; y++) {
+								ctx.fillRect(x*6+6,dim[1]-(y*6+12),4,4);
+							}
+						}
+						that.animationId = setTimeout(drawMeter, 25);
+					}
+                    this.animationId = setTimeout(drawMeter, 25);
+				}
+			}
+			new Visualizer().ini();
+        </script>
+    </body>
+</html>
