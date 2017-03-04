@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>3-D Random Sine Graph</title>
+</head>
+<body>
+<canvas id="viewport" width="500px" height="500px"></canvas>
+<script>
+  window.onload = function() {
+      var canvas = document.getElementById("viewport");
+      var context = canvas.getContext("2d");
+   
+      var width = canvas.width;
+      var height = canvas.height;
+      
+      //[0,1,2,3] Points
+      var X = [0,1,1,0]   //[0,1]
+      var Y = [0,1,1,0]   //[3,2]
+      var Z = [0,1,0,1]
+      
+      var PH = new Array(width);
+      for (var i = 0; i < width; i++) {
+        PH[i] = new Array(height);
+      }
+      
+      PH[0][0] = [X[0],Y[0],Z[0]]
+      PH[width-1][0] = [X[1],Y[1],Z[1]]
+      PH[0][height-1] = [X[2],Y[2],Z[2]]
+      PH[width-1][height-1] = [X[3],Y[3],Z[3]]
+      
+      /////////////////////////////////
+      
+      A = (Z[1]-Z[0])/2.0
+      B = Math.PI/(X[1]-X[0])
+      XM = (X[0]+X[1])/2.0
+      ZM = (Z[0]+Z[1])/2.0
+      
+      for (var i = 0; i < width; i++) {
+        PH[0][i] = A*Math.sin(B*(i/(width-1.0)-XM))+ZM
+      }
+      
+      /////////////////////////////////
+      
+      A = (Z[3]-Z[2])/2.0
+      B = Math.PI/(X[3]-X[2])
+      XM = (X[2]+X[3])/2.0
+      ZM = (Z[2]+Z[3])/2.0
+     
+      for (var i = 0; i < width; i++) {
+        PH[width-1][i] = A*Math.sin(B*(i/(width-1.0)-XM))+ZM
+      }
+      
+      /////////////////////////////////
+      
+      for (var x= 0; x < width; x++) {
+      	A = (PH[height-1][x]-PH[0][x])/2.0
+      	B = Math.PI/(Y[1]-Y[0])
+      	YM = (Y[0]+Y[1])/2.0
+      	ZM = (PH[0][x]+PH[height-1][x])/2.0
+      
+      	for (var y = 0; y < height; y++) {
+      		PH[y][x] = A*Math.sin(B*(y/(height-1)-YM))+ZM
+      	}
+      }
+      
+      var imagedata = context.createImageData(width, height);
+   
+      // Create the image
+      function createImage(offset) {
+        for (var x = 0; x < width; x++) {
+      	  for (var y = 0; y < height; y++) {
+      	    
+      	    var pixelindex = (y * width + x)*4;
+  
+            var rgb = [PH[x][y]*255,PH[x][y]*255,PH[x][y]*255]
+      
+            imagedata.data[pixelindex] = rgb[0];     // Red
+            imagedata.data[pixelindex+1] = rgb[1]; // Green
+            imagedata.data[pixelindex+2] = rgb[2];  // Blue
+            imagedata.data[pixelindex+3] = 255;   // Alpha
+      	  }
+      	}
+      }
+      
+   
+      // Main loop
+      function main(tframe) {
+        window.requestAnimationFrame(main);
+        createImage(Math.floor(tframe / 10));
+        context.putImageData(imagedata, 0, 0);
+      }
+  
+      main(0);
+  };
+</script>
+
+</body>
+</html>
+
