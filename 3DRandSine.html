@@ -1,3 +1,15 @@
+<!--
+This is a program I made to represent 3D space on a 2D canvas. The third dimension is created based on the color of the pixels. For example if the Z value is 0 then the pixel is black, but if the Z value is 1 the pixel is white. 
+
+The original purpose of this was to connect 4 points with a 3D surface to create a smooth transition. This works well for procedurally generated values and creating smooth transitions. 
+
+Here is a link to my custom Sine Smoothening Equation between two points. https://www.desmos.com/calculator/uobnql9ec5 
+
+I will hopefully be bringing a better optimized solution soon.
+
+-->
+
+
 <!DOCTYPE html>
 <html>
     
@@ -19,12 +31,13 @@
               var width = canvas.width;
               var height = canvas.height;
 
-              //[0,1,2,3] Points 
+              //      [0,1,2,3] Points 
               var X = [0,1,1,0]   //[0,1]
               var Y = [0,1,1,0]   //[3,2]
-              var Z = [Math.random(),Math.random(),Math.random(),Math.random()] //Change these values to change the Z value of each point
-
-              var PH = new Array(width);
+              var Z = [Math.random(),Math.random(),Math.random(),Math.random()] 
+              //Change these values to change the Z value of each point
+              
+              var PH = new Array(width); //Creates PH map, this acts as the Z Value holder
               for (var i = 0; i < width; i++) {
                 PH[i] = new Array(height);
               }
@@ -35,7 +48,7 @@
               PH[width-1][height-1] = [X[3],Y[3],Z[3]]
 
               /////////////////////////////////
-
+              //Connects the top two points together
               A = (Z[1]-Z[0])/2.0
               B = Math.PI/(X[1]-X[0])
               XM = (X[0]+X[1])/2.0
@@ -46,7 +59,7 @@
               }
 
               /////////////////////////////////
-
+              //Connects the bottom two points together
               A = (Z[3]-Z[2])/2.0
               B = Math.PI/(X[3]-X[2])
               XM = (X[2]+X[3])/2.0
@@ -57,7 +70,7 @@
               }
 
               /////////////////////////////////
-
+              //Connects all the points between the top and bottom row
               for (var x= 0; x < width; x++) {
                 A = (PH[height-1][x]-PH[0][x])/2.0
                 B = Math.PI/(Y[1]-Y[0])
